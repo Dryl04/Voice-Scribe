@@ -195,8 +195,18 @@ Le code suppose la disponibilité de plusieurs API navigateur:
 Conséquences pratiques:
 
 - L'application est mieux adaptée aux navigateurs modernes.
-- La Web Speech API ne doit pas être considérée comme uniformément disponible selon les moteurs et plateformes.
+- La Web Speech API ne doit pas être considérée comme uniformément disponible selon les moteurs et plateformes, ni comme un vrai moteur hors ligne garanti.
 - Les modèles Whisper sont plus exigeants en CPU, mémoire et temps de chargement.
+
+## Hors ligne
+
+Le comportement hors ligne doit être compris précisément:
+
+- Le moteur `Web Speech API` dépend fortement du navigateur et ne doit pas être considéré comme fiable hors ligne.
+- Les modèles Whisper sont les seuls moteurs du projet conçus pour une exécution locale réelle.
+- Un modèle Whisper doit d'abord être téléchargé avec succès une première fois.
+- Une fois mis en cache par le navigateur, il peut être réutilisé sans connexion, sous réserve que le cache navigateur soit toujours disponible.
+- Si le cache a été vidé, si le navigateur bloque ce cache, ou si le premier chargement n'a jamais abouti, une connexion est encore nécessaire.
 
 ## Particularités d'interface
 

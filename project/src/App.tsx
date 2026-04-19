@@ -175,7 +175,7 @@ export function App() {
                   <div>
                     <CardTitle>Speech to Text</CardTitle>
                     <CardDescription>
-                      Click the microphone to start dictating. Works offline.
+                      Click the microphone to start dictating. Local Whisper models can work offline after their first successful download.
                     </CardDescription>
                   </div>
                   <RecordingButton
