@@ -7,34 +7,20 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/
 import { getNotes, deleteNote, type Note } from '@/lib/notes-service'
 import { toast } from 'sonner'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useAuth } from '@/hooks/use-auth'
 
 interface SavedNotesListProps {
   refreshTrigger: number
 }
 
 export function SavedNotesList({ refreshTrigger }: SavedNotesListProps) {
-  const { user } = useAuth()
-  const [notes, setNotes] = useState<Note[]>([])
-  const [loading, setLoading] = useState(true)
+  const [notes, setNotes] = useState<Note[]>(() => getNotes())
 
   useEffect(() => {
-    async function load() {
-      setLoading(true)
-      if (!user) {
-        setNotes([])
-        setLoading(false)
-        return
-      }
-      const data = await getNotes()
-      setNotes(data)
-      setLoading(false)
-    }
-    load()
-  }, [refreshTrigger, user])
+    setNotes(getNotes())
+  }, [refreshTrigger])
 
-  const handleDelete = async (id: string) => {
-    const success = await deleteNote(id)
+  const handleDelete = (id: string) => {
+    const success = deleteNote(id)
     if (success) {
       setNotes((prev) => prev.filter((n) => n.id !== id))
       toast.success('Note deleted')
@@ -46,30 +32,6 @@ export function SavedNotesList({ refreshTrigger }: SavedNotesListProps) {
     toast.success('Copied to clipboard')
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <span className="text-sm text-muted-foreground">Loading notes...</span>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return (
-      <Empty>
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <FileText />
-          </EmptyMedia>
-          <EmptyTitle>Sign in required</EmptyTitle>
-          <EmptyDescription>
-            Sign in to save and view your notes across devices.
-          </EmptyDescription>
-        </EmptyHeader>
-      </Empty>
-    )
-  }
-
   if (notes.length === 0) {
     return (
       <Empty>
@@ -79,7 +41,7 @@ export function SavedNotesList({ refreshTrigger }: SavedNotesListProps) {
           </EmptyMedia>
           <EmptyTitle>No saved notes</EmptyTitle>
           <EmptyDescription>
-            Record speech and save your transcriptions here.
+            Record speech and save your transcriptions on this device.
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -87,7 +49,7 @@ export function SavedNotesList({ refreshTrigger }: SavedNotesListProps) {
   }
 
   return (
-    <ScrollArea className="h-[400px]">
+    <ScrollArea className="h-100">
       <div className="space-y-3 pr-4">
         {notes.map((note) => (
           <Card key={note.id}>

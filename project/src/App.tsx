@@ -9,8 +9,6 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 import { ModeToggle } from '@/components/mode-toggle'
-import { UserMenu } from '@/components/user-menu'
-import { useAuth } from '@/hooks/use-auth'
 import { ModelSelector } from '@/components/model-selector'
 import { ModelInfoPanel } from '@/components/model-info-panel'
 import { RecordingButton } from '@/components/recording-button'
@@ -41,7 +39,6 @@ export function App() {
   const [refreshNotes, setRefreshNotes] = useState(0)
   const [activeInput, setActiveInput] = useState<HTMLElement | null>(null)
   const [activeInputBase, setActiveInputBase] = useState('')
-  const { user, openAuthDialog } = useAuth()
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true)
@@ -132,33 +129,28 @@ export function App() {
     stopListening()
   }, [stopListening])
 
-  const handleSaveNote = useCallback(async () => {
-    if (!transcript) return
-    if (!user) {
-      toast.error('Sign in to save notes')
-      openAuthDialog()
-      return
-    }
+  const handleSaveNote = useCallback(() => {
+    if (!transcript.trim()) return
     const model = STT_MODELS.find((m) => m.id === modelId)
     const words = transcript.trim().split(/\s+/).filter(Boolean)
     const title = words.slice(0, 2).join(' ')
-    const saved = await saveNote({
+    const saved = saveNote({
       content: transcript,
       source_model: model?.name ?? modelId,
       title,
     })
     if (saved) {
-      toast.success('Note saved')
+      toast.success('Note saved locally')
       setRefreshNotes((prev) => prev + 1)
     } else {
       toast.error('Could not save note')
     }
-  }, [transcript, modelId, user, openAuthDialog])
+  }, [transcript, modelId])
 
   return (
     <div className="min-h-svh bg-background">
       <Toaster />
-      <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <Mic className="size-5 text-foreground" />
@@ -166,7 +158,9 @@ export function App() {
           </div>
           <div className="flex items-center gap-2">
             <StatusIndicator status={status} isOnline={isOnline} loadProgress={loadProgress} />
-            <UserMenu />
+            <Badge variant="secondary" className="hidden sm:inline-flex">
+              Local Notes
+            </Badge>
             <ModeToggle />
           </div>
         </div>
@@ -211,7 +205,7 @@ export function App() {
                   value={transcript}
                   onChange={(e) => setTranscript(e.target.value)}
                   placeholder="Your transcription will appear here..."
-                  className="min-h-[200px] resize-y text-base leading-relaxed"
+                  className="min-h-50 resize-y text-base leading-relaxed"
                 />
                 {interimText && (
                   <p className="mt-1 text-xs italic text-muted-foreground">
